@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loginar - Think into Life</title>
+    <link rel="icon" href="img/favicon.ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @font-face {
+            font-family: 'TimesSimSun';
+            src: local('SimSun'), local('宋体');
+        }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', 'SimSun', serif;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            background: #0a1628;
+        }
+
+        /* Slideshow */
+        .slideshow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 1.8s ease-in-out;
+        }
+
+        .slide.active {
+            opacity: 1;
+        }
+
+        .slide::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(8, 22, 49, 0.88) 0%, rgba(15, 35, 65, 0.75) 50%, rgba(8, 22, 49, 0.82) 100%);
+        }
+
+        .slide:nth-child(1) { background-image: url('img/slide1.jpg'); }
+        .slide:nth-child(2) { background-image: url('img/slide2.jpg'); }
+
+        /* Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 36px 60px;
+            display: flex;
+            align-items: center;
+            z-index: 10;
+            pointer-events: auto;
+        }
+
+        .logo-wrap {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo-img {
+            width: 52px;
+            height: 52px;
+            object-fit: contain;
+            filter: brightness(0) invert(1);
+            animation: logoFloat 4s ease-in-out infinite;
+        }
+
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            font-family: 'Georgia', serif;
+        }
+
+        .logo-subtitle {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.6);
+            letter-spacing: 2px;
+            margin-top: 2px;
+        }
+
+        /* Main Content */
+        .main-content {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 80px;
+            z-index: 10;
+            pointer-events: auto;
+        }
+
+        /* Left - Title area */
+        .hero-left {
+            max-width: 680px;
+        }
+
+        .hero-tag {
+            display: inline-block;
+            padding: 6px 18px;
+            border: 1px solid rgba(200, 160, 100, 0.5);
+            color: #c8a064;
+            font-size: 11px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 28px;
+            opacity: 0;
+            animation: fadeSlideUp 0.8s 0.3s forwards;
+        }
+
+        .hero-title {
+            font-size: 54px;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1.2;
+            margin-bottom: 10px;
+            opacity: 0;
+            animation: fadeSlideUp 0.8s 0.5s forwards;
+        }
+
+        .hero-title-cn {
+            font-size: 22px;
+            color: rgba(255, 255, 255, 0.55);
+            font-weight: 400;
+            margin-bottom: 24px;
+            letter-spacing: 2px;
+            opacity: 0;
+            animation: fadeSlideUp 0.8s 0.6s forwards;
+        }
+
+        .hero-desc {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.65);
+            line-height: 1.8;
+            max-width: 520px;
+            opacity: 0;
+            animation: fadeSlideUp 0.8s 0.7s forwards;
+        }
+
+        .hero-desc-cn {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-top: 12px;
+            line-height: 1.8;
+            opacity: 0;
+            animation: fadeSlideUp 0.8s 0.8s forwards;
+        }
+
+        .divider {
+            width: 60px;
+            height: 2px;
+            background: linear-gradient(90deg, #c8a064, transparent);
+            margin: 24px 0;
+            opacity: 0;
+            animation: fadeSlideUp 0.8s 0.65s forwards;
+        }
+
+        @keyframes fadeSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(24px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Right - Info Cards */
+        .hero-right {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            opacity: 0;
+            animation: fadeSlideLeft 0.8s 1s forwards;
+        }
+
+        @keyframes fadeSlideLeft {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 4px;
+            padding: 22px 28px;
+            width: 280px;
+            transition: all 0.3s ease;
+            cursor: default;
+        }
+
+        .info-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(200, 160, 100, 0.3);
+            transform: translateX(-4px);
+        }
+
+        .info-card-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 6px;
+            letter-spacing: 1px;
+        }
+
+        .info-card-desc {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.45);
+            line-height: 1.6;
+        }
+
+        /* Slide indicators */
+        .indicators {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .indicator {
+            width: 32px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 2px;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            pointer-events: auto;
+        }
+
+        .indicator.active {
+            background: #c8a064;
+            width: 48px;
+        }
+
+        .indicator:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Bottom bar */
+        .bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.05);
+            z-index: 10;
+        }
+
+        .bottom-bar-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #c8a064, rgba(200, 160, 100, 0.3));
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Corner decoration */
+        .corner-deco {
+            position: fixed;
+            width: 60px;
+            height: 60px;
+            z-index: 5;
+            opacity: 0.15;
+        }
+
+        .corner-deco.tl {
+            top: 30px;
+            left: 30px;
+            border-top: 1px solid #c8a064;
+            border-left: 1px solid #c8a064;
+        }
+
+        .corner-deco.br {
+            bottom: 30px;
+            right: 30px;
+            border-bottom: 1px solid #c8a064;
+            border-right: 1px solid #c8a064;
+        }
+
+        /* Particle canvas */
+        #particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .main-content {
+                flex-direction: column;
+                justify-content: center;
+                padding: 100px 40px 60px;
+                gap: 40px;
+            }
+
+            .hero-title {
+                font-size: 36px;
+            }
+
+            .hero-right {
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .info-card {
+                width: 220px;
+                padding: 16px 20px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .header {
+                padding: 20px 24px;
+            }
+
+            .logo-title {
+                font-size: 20px;
+                letter-spacing: 4px;
+            }
+
+            .main-content {
+                padding: 90px 24px 60px;
+            }
+
+            .hero-title {
+                font-size: 28px;
+            }
+
+            .hero-right {
+                flex-direction: column;
+            }
+
+            .info-card {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Slideshow -->
+    <div class="slideshow">
+        <div class="slide active"></div>
+        <div class="slide"></div>
+    </div>
+
+    <!-- Particles -->
+    <canvas id="particles"></canvas>
+
+    <!-- Corner decorations -->
+    <div class="corner-deco tl"></div>
+    <div class="corner-deco br"></div>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="logo-wrap">
+            <img src="img/icon.png" alt="Loginar Logo" class="logo-img">
+            <div class="logo-text">
+                <div class="logo-title">Loginar</div>
+                <div class="logo-subtitle">Think into Life.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="hero-left">
+            <div class="hero-tag">Laboratory of Information Science</div>
+            <h1 class="hero-title">Exploring the Frontiers<br>of Knowledge</h1>
+            <p class="hero-title-cn">探索知识前沿 · 赋能未来科技</p>
+            <div class="divider"></div>
+            <p class="hero-desc">
+                Dedicated to advancing interdisciplinary research in information science, 
+                bridging theory and application to address complex challenges of the digital era.
+            </p>
+            <p class="hero-desc-cn">
+                致力于信息科学跨学科研究，连接理论与应用，应对数字时代的复杂挑战。
+            </p>
+        </div>
+        <div class="hero-right">
+            <div class="info-card">
+                <div class="info-card-title">Academic Research</div>
+                <div class="info-card-desc">学术科研 · 推动前沿理论探索与技术创新</div>
+            </div>
+            <div class="info-card">
+                <div class="info-card-title">Data Intelligence</div>
+                <div class="info-card-desc">数据智能 · 挖掘数据价值驱动决策智慧</div>
+            </div>
+            <div class="info-card">
+                <div class="info-card-title">Future Computing</div>
+                <div class="info-card-desc">未来计算 · 探索新一代计算范式与架构</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide indicators -->
+    <div class="indicators">
+        <div class="indicator active" data-index="0"></div>
+        <div class="indicator" data-index="1"></div>
+    </div>
+
+    <!-- Bottom progress bar -->
+    <div class="bottom-bar">
+        <div class="bottom-bar-progress" id="progressBar"></div>
+    </div>
+
+    <script>
+        // Slideshow
+        const slides = document.querySelectorAll('.slide');
+        const indicators = document.querySelectorAll('.indicator');
+        const progressBar = document.getElementById('progressBar');
+        let current = 0;
+        const slideInterval = 6000;
+        let progress = 0;
+        let progressTimer;
+
+        function goToSlide(index) {
+            slides[current].classList.remove('active');
+            indicators[current].classList.remove('active');
+            current = index;
+            slides[current].classList.add('active');
+            indicators[current].classList.add('active');
+            resetProgress();
+        }
+
+        function nextSlide() {
+            goToSlide((current + 1) % slides.length);
+        }
+
+        function resetProgress() {
+            progress = 0;
+            progressBar.style.width = '0%';
+            clearInterval(progressTimer);
+            progressTimer = setInterval(() => {
+                progress += 100 / (slideInterval / 50);
+                progressBar.style.width = progress + '%';
+                if (progress >= 100) {
+                    nextSlide();
+                }
+            }, 50);
+        }
+
+        indicators.forEach(ind => {
+            ind.addEventListener('click', () => {
+                goToSlide(parseInt(ind.dataset.index));
+            });
+        });
+
+        resetProgress();
+
+        // Particles
+        const canvas = document.getElementById('particles');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 1.5 + 0.5;
+                this.speedX = (Math.random() - 0.5) * 0.3;
+                this.speedY = (Math.random() - 0.5) * 0.3;
+                this.opacity = Math.random() * 0.3 + 0.05;
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(200, 170, 120, ${this.opacity})`;
+                ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < 50; i++) {
+            particles.push(new Particle());
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            // Draw lines between close particles
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 120) {
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.strokeStyle = `rgba(200, 170, 120, ${0.04 * (1 - dist / 120)})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            requestAnimationFrame(animateParticles);
+        }
+
+        animateParticles();
+    </script>
+</body>
+</html>
